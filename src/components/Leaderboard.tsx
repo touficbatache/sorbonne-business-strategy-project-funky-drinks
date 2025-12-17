@@ -26,11 +26,18 @@ export function Leaderboard({ players }: LeaderboardProps) {
   const winner = sortedPlayers[0];
 
   const getProfile = (player: Player) => {
-    const profitRank = [...players].sort((a, b) => b.profitCum - a.profitCum).indexOf(player);
-    const shareRank = [...players].sort((a, b) => b.marketShareLast - a.marketShareLast).indexOf(player);
-    const satRank = [...players].sort((a, b) => b.satisfactionAvg - a.satisfactionAvg).indexOf(player);
+    const profitRank = [...players]
+      .sort((a, b) => b.profitCum - a.profitCum)
+      .indexOf(player);
+    const shareRank = [...players]
+      .sort((a, b) => b.marketShareLast - a.marketShareLast)
+      .indexOf(player);
+    const satRank = [...players]
+      .sort((a, b) => b.satisfactionAvg - a.satisfactionAvg)
+      .indexOf(player);
 
-    if (profitRank === 0 && shareRank <= 1) return { label: "Rentabilité", color: "text-energy" };
+    if (profitRank === 0 && shareRank <= 1)
+      return { label: "Rentabilité", color: "text-energy" };
     if (shareRank === 0) return { label: "Croissance", color: "text-info" };
     if (satRank === 0) return { label: "Qualité", color: "text-accent" };
     return { label: "Équilibré", color: "text-muted-foreground" };
@@ -73,12 +80,24 @@ export function Leaderboard({ players }: LeaderboardProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">#</th>
-              <th className="text-left p-4 text-sm font-medium text-muted-foreground">Joueur</th>
-              <th className="text-right p-4 text-sm font-medium text-muted-foreground">Profit total</th>
-              <th className="text-right p-4 text-sm font-medium text-muted-foreground">Part marché</th>
-              <th className="text-right p-4 text-sm font-medium text-muted-foreground">Satisfaction</th>
-              <th className="text-right p-4 text-sm font-medium text-muted-foreground">Profil</th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">
+                #
+              </th>
+              <th className="text-left p-4 text-sm font-medium text-muted-foreground">
+                Joueur
+              </th>
+              <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                Profit total
+              </th>
+              <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                Part marché
+              </th>
+              <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                Satisfaction
+              </th>
+              <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                Profil
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -104,11 +123,14 @@ export function Leaderboard({ players }: LeaderboardProps) {
                     )}
                   </td>
                   <td className="p-4 font-medium">{player.name}</td>
-                  <td className={cn(
-                    "p-4 text-right font-display text-lg",
-                    player.profitCum >= 0 ? "text-energy" : "text-danger"
-                  )}>
-                    {player.profitCum > 0 ? "+" : ""}{player.profitCum}€
+                  <td
+                    className={cn(
+                      "p-4 text-right font-display text-lg",
+                      player.profitCum >= 0 ? "text-energy" : "text-danger"
+                    )}
+                  >
+                    {player.profitCum > 0 ? "+" : ""}
+                    {player.profitCum.toLocaleString()}
                   </td>
                   <td className="p-4 text-right">
                     {(player.marketShareLast * 100).toFixed(1)}%
@@ -147,7 +169,9 @@ function SortButton({
       onClick={onClick}
       className={cn(
         "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors",
-        active ? "bg-primary text-primary-foreground" : "bg-secondary hover:bg-secondary/80"
+        active
+          ? "bg-primary text-primary-foreground"
+          : "bg-secondary hover:bg-secondary/80"
       )}
     >
       {icon}
