@@ -37,7 +37,7 @@ export function ScoreboardMini({
                     player.cash >= 0 ? "text-energy" : "text-danger"
                   )}
                 >
-                  {player.cash.toLocaleString()}
+                  {player.cash.toLocaleString()} k€
                 </span>
                 <span className="text-muted-foreground">
                   {(player.marketShareLast * 100).toFixed(0)}%
