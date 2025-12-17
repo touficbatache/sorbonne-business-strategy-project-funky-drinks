@@ -6,7 +6,7 @@ import {
   Player,
   ProductType,
   PlayerRoundDecision,
-  PlayerRoundResult,
+  ProductVote,
 } from "@/lib/types";
 import {
   TOTAL_ROUNDS,
@@ -16,8 +16,8 @@ import {
   START_CAPACITY,
 } from "@/lib/config";
 import { EVENTS } from "@/lib/events";
-import { pickEvent } from "@/lib/rng";
-import { simulateRound } from "@/lib/simulate";
+import { pickEvent, tieBreakProduct } from "@/lib/rng";
+import { simulateRound, simulateBaseline } from "@/lib/simulate";
 
 const initialState: GameState = {
   seed: "",
@@ -26,13 +26,19 @@ const initialState: GameState = {
   players: [],
   currentPlayerIndex: 0,
   usedEvents: [],
+  productVotes: [],
 };
 
 type GameActions = {
   reset: () => void;
   setPlayers: (names: string[]) => void;
   setSeed: (seed: string) => void;
-  setProductInitial: (product: ProductType) => void;
+  // Voting system
+  submitProductVote: (playerId: string, product: ProductType) => void;
+  getVoteCounts: () => Record<ProductType, number>;
+  allPlayersVoted: () => boolean;
+  finalizeProductVote: () => void;
+  // Game flow
   startGame: () => void;
   acknowledgeEvent: () => void;
   beginPlayerTurn: () => void;
@@ -64,20 +70,78 @@ export const useGameStore = create<GameState & GameActions>()(
           marketShareLast: 0,
           satisfactionAvg: 0,
         }));
-        set({ players, phase: "SETUP" });
+        set({ players, phase: "SETUP", productVotes: [] });
       },
 
       setSeed: (seed: string) => set({ seed }),
 
-      setProductInitial: (product: ProductType) => {
-        const { players } = get();
-        const updatedPlayers = players.map((p) => ({
-          ...p,
-          portfolio: [product],
-        }));
-        set({ productInitial: product, players: updatedPlayers });
+      // ========== Voting System ==========
+      submitProductVote: (playerId: string, product: ProductType) => {
+        const { productVotes } = get();
+        // Remove existing vote from this player
+        const filtered = productVotes.filter(v => v.playerId !== playerId);
+        set({ productVotes: [...filtered, { playerId, product }] });
       },
 
+      getVoteCounts: () => {
+        const { productVotes } = get();
+        const counts: Record<ProductType, number> = {
+          LEAN: 0,
+          BULK: 0,
+          PROTEIN: 0,
+          PERFORMANCE: 0,
+        };
+        productVotes.forEach(v => counts[v.product]++);
+        return counts;
+      },
+
+      allPlayersVoted: () => {
+        const { players, productVotes } = get();
+        return productVotes.length >= players.length;
+      },
+
+      finalizeProductVote: () => {
+        const { seed, players } = get();
+        const counts = get().getVoteCounts();
+        
+        // Find max votes
+        const maxVotes = Math.max(...Object.values(counts));
+        const winners = (Object.keys(counts) as ProductType[]).filter(
+          p => counts[p] === maxVotes
+        );
+        
+        // Tie-break with RNG if needed
+        const winner = winners.length === 1 
+          ? winners[0] 
+          : tieBreakProduct(seed, winners);
+        
+        // Update all players with the winning product and calculate baseline
+        const baselineEvent = EVENTS.BASELINE;
+        const updatedPlayers = players.map(p => {
+          const playerWithProduct = {
+            ...p,
+            portfolio: [winner],
+          };
+          // Simulate baseline round
+          const { updatedPlayer } = simulateBaseline({
+            event: baselineEvent,
+            productInitial: winner,
+            player: playerWithProduct,
+          });
+          // Reset lastLever since baseline doesn't count
+          return {
+            ...updatedPlayer,
+            lastLever: undefined,
+          };
+        });
+
+        set({ 
+          productInitial: winner, 
+          players: updatedPlayers,
+        });
+      },
+
+      // ========== Game Flow ==========
       startGame: () => {
         const { seed, usedEvents } = get();
         const eventKey = pickEvent(seed, 1, usedEvents);

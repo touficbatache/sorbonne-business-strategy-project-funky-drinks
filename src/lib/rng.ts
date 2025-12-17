@@ -1,5 +1,5 @@
-import { EventKey, EventCategory } from "./types";
-import { EVENTS, ALL_EVENTS } from "./events";
+import { EventKey, EventCategory, ProductType } from "./types";
+import { ALL_EVENTS } from "./events";
 
 // Mulberry32 PRNG for deterministic randomness
 export function mulberry32(seed: number): () => number {
@@ -53,4 +53,11 @@ export function seededShuffle<T>(array: T[], seed: string): T[] {
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
+}
+
+// Tie-break for product voting
+export function tieBreakProduct(seed: string, products: ProductType[]): ProductType {
+  const rng = mulberry32(seedFromString(seed + "_tiebreak"));
+  const index = Math.floor(rng() * products.length);
+  return products[index];
 }

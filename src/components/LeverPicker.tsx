@@ -33,6 +33,11 @@ export function LeverPicker({ player, onSubmit }: LeverPickerProps) {
   const isDisabled = (lever: LeverKey) => {
     if (player.lastLever === lever) return "Interdit deux rounds de suite";
     if (!canAfford(lever)) return `Cash insuffisant (${LEVER_INFO[lever].cost}€ requis)`;
+    // Diversify disabled if all products owned
+    if (lever === "DIVERSIFY") {
+      const availableProducts = ALL_PRODUCTS.filter((p) => !player.portfolio.includes(p));
+      if (availableProducts.length === 0) return "Tous les produits déjà détenus";
+    }
     return null;
   };
 
@@ -79,7 +84,11 @@ export function LeverPicker({ player, onSubmit }: LeverPickerProps) {
                 selected={selectedLever === lever}
                 disabled={!!disabledReason}
                 disabledReason={disabledReason || undefined}
-                onClick={() => setSelectedLever(lever)}
+                onClick={() => {
+                  setSelectedLever(lever);
+                  // Reset sub-selections when changing lever
+                  if (lever !== "DIVERSIFY") setSelectedProduct(null);
+                }}
                 badge={info.cost > 0 ? `${info.cost}€` : undefined}
               />
             );
@@ -117,22 +126,30 @@ export function LeverPicker({ player, onSubmit }: LeverPickerProps) {
             <p className="text-muted-foreground">Vous avez déjà tous les produits !</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {availableProducts.map((product) => {
+              {ALL_PRODUCTS.map((product) => {
                 const info = PRODUCT_INFO[product];
+                const isOwned = player.portfolio.includes(product);
+                
                 return (
                   <button
                     key={product}
-                    onClick={() => setSelectedProduct(product)}
+                    onClick={() => !isOwned && setSelectedProduct(product)}
+                    disabled={isOwned}
                     className={cn(
                       "p-4 rounded-lg border-2 transition-all text-left flex items-center gap-3",
-                      selectedProduct === product
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-primary/50"
+                      isOwned 
+                        ? "border-border/50 bg-muted/30 opacity-50 cursor-not-allowed"
+                        : selectedProduct === product
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-primary/50"
                     )}
                   >
                     <span className="text-2xl">{info.icon}</span>
                     <div>
-                      <div className="font-medium">{info.name}</div>
+                      <div className="font-medium">
+                        {info.name}
+                        {isOwned && <span className="text-xs text-muted-foreground ml-2">(déjà détenu)</span>}
+                      </div>
                       <div className="text-xs text-muted-foreground">{info.description}</div>
                     </div>
                   </button>

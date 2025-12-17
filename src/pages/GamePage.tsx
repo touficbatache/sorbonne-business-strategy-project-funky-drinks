@@ -50,18 +50,22 @@ export default function GamePage() {
   const currentPlayer = players[currentPlayerIndex];
   const stepIndex = phase === "FINAL" ? 3 : 2;
 
+  // Determine if we should show minimal scoreboard (privacy mode)
+  const isPrivacyMode = phase === "PLAYER_GATE" || phase === "PLAYER_DECISION";
+
   return (
     <Shell>
       <div className="container py-8">
         <Stepper steps={STEPS} currentStep={stepIndex} />
 
         <div className="mt-8 flex gap-8">
-          {/* Sidebar - always visible except during gate */}
+          {/* Sidebar - hidden during gate, minimal during decision */}
           {phase !== "PLAYER_GATE" && phase !== "FINAL" && (
             <aside className="hidden lg:block w-64 space-y-4 flex-shrink-0">
               <ScoreboardMini
                 players={players}
                 currentPlayerId={currentPlayer?.id}
+                minimal={isPrivacyMode}
               />
               <MarketBriefModal />
             </aside>
@@ -115,7 +119,7 @@ export default function GamePage() {
                     <LeverPicker player={currentPlayer} onSubmit={submitDecision} />
                   </div>
                   <div>
-                    <PlayerStatus player={currentPlayer} />
+                    <PlayerStatus player={currentPlayer} showLastRound={true} />
                   </div>
                 </div>
               </div>

@@ -4,12 +4,15 @@ import { cn } from "@/lib/utils";
 interface ScoreboardMiniProps {
   players: Player[];
   currentPlayerId?: string;
+  minimal?: boolean; // Hide detailed stats for privacy
 }
 
-export function ScoreboardMini({ players, currentPlayerId }: ScoreboardMiniProps) {
+export function ScoreboardMini({ players, currentPlayerId, minimal = false }: ScoreboardMiniProps) {
   return (
     <div className="bg-card/50 border border-border rounded-xl p-4">
-      <h4 className="text-sm font-medium text-muted-foreground mb-3">Scores</h4>
+      <h4 className="text-sm font-medium text-muted-foreground mb-3">
+        {minimal ? "Joueurs" : "Scores"}
+      </h4>
       <div className="space-y-2">
         {players.map((player) => (
           <div
@@ -20,16 +23,18 @@ export function ScoreboardMini({ players, currentPlayerId }: ScoreboardMiniProps
             )}
           >
             <span className="font-medium truncate max-w-[100px]">{player.name}</span>
-            <div className="flex items-center gap-3 text-sm">
-              <span className={cn(
-                player.cash >= 0 ? "text-energy" : "text-danger"
-              )}>
-                {player.cash}€
-              </span>
-              <span className="text-muted-foreground">
-                {(player.marketShareLast * 100).toFixed(0)}%
-              </span>
-            </div>
+            {!minimal && (
+              <div className="flex items-center gap-3 text-sm">
+                <span className={cn(
+                  player.cash >= 0 ? "text-energy" : "text-danger"
+                )}>
+                  {player.cash}€
+                </span>
+                <span className="text-muted-foreground">
+                  {(player.marketShareLast * 100).toFixed(0)}%
+                </span>
+              </div>
+            )}
           </div>
         ))}
       </div>

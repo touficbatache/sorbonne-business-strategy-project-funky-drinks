@@ -4,9 +4,10 @@ export type LeverKey = "PRICE" | "RD" | "CAPACITY" | "BRAND" | "DIVERSIFY";
 
 export type PriceLevel = "LOW" | "MID" | "PREMIUM";
 
-export type EventCategory = "CLIMATE" | "ECONOMY" | "REGULATION" | "TRENDS";
+export type EventCategory = "CLIMATE" | "ECONOMY" | "REGULATION" | "TRENDS" | "BASELINE";
 
 export type EventKey =
+  | "BASELINE"
   | "HEATWAVE"
   | "COLD_WINTER"
   | "ECON_CRISIS"
@@ -50,7 +51,7 @@ export type PlayerRoundDecision =
   | { lever: "DIVERSIFY"; addProduct: ProductType };
 
 export type PlayerRoundResult = {
-  round: number;
+  round: number; // 0 = baseline, 1..5 = normal rounds
   event: EventKey;
   decision: PlayerRoundDecision;
   unitsSold: number;
@@ -64,10 +65,15 @@ export type PlayerRoundResult = {
 };
 
 export type RoundState = {
-  roundIndex: number;
+  roundIndex: number; // 1..5 (0 is baseline, handled separately)
   event: EventKey;
   category: EventCategory;
   donePlayerIds: string[];
+};
+
+export type ProductVote = {
+  playerId: string;
+  product: ProductType;
 };
 
 export type GameState = {
@@ -80,4 +86,6 @@ export type GameState = {
   currentPlayerIndex: number;
   usedEvents: EventKey[];
   currentResult?: PlayerRoundResult;
+  // Voting system
+  productVotes: ProductVote[];
 };
