@@ -1,10 +1,21 @@
 export type ProductType = "LEAN" | "BULK" | "PROTEIN" | "PERFORMANCE";
 
-export type LeverKey = "PRICE" | "RD" | "CAPACITY" | "BRAND" | "DIVERSIFY";
+export type LeverKey =
+  | "PRICE"
+  | "RD"
+  | "CAPACITY"
+  | "BRAND"
+  | "DIVERSIFY"
+  | "LOAN";
 
 export type PriceLevel = "LOW" | "MID" | "PREMIUM";
 
-export type EventCategory = "CLIMATE" | "ECONOMY" | "REGULATION" | "TRENDS" | "BASELINE";
+export type EventCategory =
+  | "CLIMATE"
+  | "ECONOMY"
+  | "REGULATION"
+  | "TRENDS"
+  | "BASELINE";
 
 export type EventKey =
   | "BASELINE"
@@ -41,14 +52,16 @@ export type Player = {
   profitCum: number;
   marketShareLast: number;
   satisfactionAvg: number;
+  loan?: { principalRemaining: number; payment: number; rate: number };
 };
 
 export type PlayerRoundDecision =
   | { lever: "PRICE"; price: PriceLevel }
-  | { lever: "RD" }
-  | { lever: "CAPACITY" }
-  | { lever: "BRAND" }
-  | { lever: "DIVERSIFY"; addProduct: ProductType };
+  | { lever: "RD"; amount: number }
+  | { lever: "CAPACITY"; amount: number }
+  | { lever: "BRAND"; amount: number }
+  | { lever: "DIVERSIFY"; addProduct: ProductType; amount: number }
+  | { lever: "LOAN"; amount: 150 | 300 };
 
 export type PlayerRoundResult = {
   round: number; // 0 = baseline, 1..5 = normal rounds
@@ -81,6 +94,8 @@ export type GameState = {
   phase: GamePhase;
   totalRounds: number;
   productInitial?: ProductType;
+  initialQuality?: number;
+  initialBrand?: number;
   players: Player[];
   currentRound?: RoundState;
   currentPlayerIndex: number;

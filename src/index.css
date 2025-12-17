@@ -1,57 +1,73 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
-
 @layer base {
   :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Base (LIGHT) */
+    --background: 40 60% 98%; /* crème très clair */
+    --foreground: 222 30% 16%; /* texte sombre doux */
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100% / 0.72; /* glass */
+    --card-foreground: 222 30% 16%;
 
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100% / 0.85;
+    --popover-foreground: 222 30% 16%;
 
-    --primary: 142 76% 45%;
-    --primary-foreground: 222 47% 6%;
+    /* Primary = vert “energy” mais pas néon */
+    --primary: 142 70% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 47% 14%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary = bleu ciel doux */
+    --secondary: 205 80% 92%;
+    --secondary-foreground: 222 30% 16%;
 
-    --muted: 222 47% 14%;
-    --muted-foreground: 215 20% 55%;
+    /* Muted = gris chaud lisible */
+    --muted: 30 25% 92%;
+    --muted-foreground: 222 15% 40%;
 
-    --accent: 38 92% 55%;
-    --accent-foreground: 222 47% 6%;
+    /* Accent = orange/pêche “jus” */
+    --accent: 32 95% 58%;
+    --accent-foreground: 222 30% 16%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 222 47% 18%;
-    --input: 222 47% 14%;
-    --ring: 142 76% 45%;
+    /* Borders / inputs */
+    --border: 222 15% 85%;
+    --input: 0 0% 100% / 0.65;
+    --ring: 142 70% 38%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Custom PowerFuel tokens */
-    --energy: 142 76% 45%;
-    --energy-glow: 142 76% 55%;
-    --warning: 38 92% 55%;
+    /* Custom FunkyDrinks tokens */
+    --energy: 142 70% 38%;
+    --energy-glow: 142 70% 52%;
+    --warning: 32 95% 58%;
     --danger: 0 84% 60%;
-    --info: 200 90% 55%;
-    
-    --gradient-energy: linear-gradient(135deg, hsl(142 76% 45%), hsl(142 76% 35%));
-    --gradient-premium: linear-gradient(135deg, hsl(38 92% 55%), hsl(25 92% 45%));
-    --gradient-dark: linear-gradient(180deg, hsl(222 47% 9%), hsl(222 47% 6%));
-    
-    --shadow-glow: 0 0 30px hsl(142 76% 45% / 0.3);
-    --shadow-card: 0 4px 20px hsl(222 47% 2% / 0.5);
+    --info: 200 85% 50%;
 
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    /* Gradients */
+    --gradient-energy: linear-gradient(
+      135deg,
+      hsl(142 70% 38%),
+      hsl(142 70% 30%)
+    );
+    --gradient-premium: linear-gradient(
+      135deg,
+      hsl(32 95% 58%),
+      hsl(18 95% 52%)
+    );
+    --gradient-soft: linear-gradient(180deg, hsl(205 90% 96%), hsl(40 60% 98%));
+
+    /* Shadows (moins “dark”, plus doux) */
+    --shadow-glow: 0 0 30px hsl(142 70% 38% / 0.22);
+    --shadow-card: 0 10px 30px hsl(222 30% 16% / 0.12);
+
+    --font-display: "Bebas Neue", sans-serif;
+    --font-body: "Inter", sans-serif;
   }
 }
 
@@ -63,14 +79,26 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
-    background-image: 
-      radial-gradient(ellipse at top, hsl(var(--primary) / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom right, hsl(var(--accent) / 0.03) 0%, transparent 50%);
+    background-image: radial-gradient(
+        ellipse at top,
+        hsl(var(--primary) / 0.05) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at bottom right,
+        hsl(var(--accent) / 0.03) 0%,
+        transparent 50%
+      );
     background-attachment: fixed;
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: 0.02em;
   }
@@ -80,16 +108,16 @@
   .text-glow {
     text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
   }
-  
+
   .card-hover {
     @apply transition-all duration-300;
   }
-  
+
   .card-hover:hover {
     @apply -translate-y-1;
     box-shadow: var(--shadow-glow);
   }
-  
+
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
@@ -107,8 +135,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-slide-up {

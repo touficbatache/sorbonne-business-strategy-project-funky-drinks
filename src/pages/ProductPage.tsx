@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shell } from "@/components/Shell";
 import { Stepper } from "@/components/Stepper";
-import { CardOption } from "@/components/CardOption";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/gameStore";
 import { ProductType } from "@/lib/types";
 import { PRODUCT_INFO } from "@/lib/config";
 import { ArrowRight, Check, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProductOption } from "@/components/ProductOption";
 
 const STEPS = [
   { id: "setup", label: "Joueurs" },
@@ -21,18 +21,20 @@ const PRODUCTS: ProductType[] = ["LEAN", "BULK", "PROTEIN", "PERFORMANCE"];
 
 export default function ProductPage() {
   const navigate = useNavigate();
-  const { 
-    players, 
+  const {
+    players,
     productVotes,
-    submitProductVote, 
-    getVoteCounts, 
+    submitProductVote,
+    getVoteCounts,
     allPlayersVoted,
     finalizeProductVote,
     startGame,
   } = useGameStore();
-  
+
   const [currentVoterIndex, setCurrentVoterIndex] = useState(0);
-  const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(
+    null
+  );
   const [showingGate, setShowingGate] = useState(true);
 
   const currentVoter = players[currentVoterIndex];
@@ -50,9 +52,9 @@ export default function ProductPage() {
 
   const handleVote = () => {
     if (!selectedProduct || !currentVoter) return;
-    
+
     submitProductVote(currentVoter.id, selectedProduct);
-    
+
     if (currentVoterIndex < players.length - 1) {
       // More players to vote
       setCurrentVoterIndex(currentVoterIndex + 1);
@@ -74,7 +76,7 @@ export default function ProductPage() {
   // All players voted - show results and confirm
   if (allVoted) {
     const maxVotes = Math.max(...Object.values(voteCounts));
-    const winners = PRODUCTS.filter(p => voteCounts[p] === maxVotes);
+    const winners = PRODUCTS.filter((p) => voteCounts[p] === maxVotes);
     const isTie = winners.length > 1;
 
     return (
@@ -86,8 +88,8 @@ export default function ProductPage() {
             <div className="text-center mb-8">
               <h1 className="font-display text-4xl mb-2">Résultat du vote</h1>
               <p className="text-muted-foreground">
-                {isTie 
-                  ? "Égalité ! Le produit sera choisi aléatoirement parmi les gagnants." 
+                {isTie
+                  ? "Égalité ! Le produit sera choisi aléatoirement parmi les gagnants."
                   : "Le produit gagnant sera le produit initial de tous les joueurs."}
               </p>
             </div>
@@ -97,36 +99,40 @@ export default function ProductPage() {
                 const info = PRODUCT_INFO[product];
                 const votes = voteCounts[product];
                 const isWinner = votes === maxVotes && maxVotes > 0;
-                
+
                 return (
                   <div
                     key={product}
                     className={cn(
                       "p-4 rounded-xl border-2 transition-all",
-                      isWinner 
-                        ? "border-primary bg-primary/10" 
+                      isWinner
+                        ? "border-primary bg-primary/10"
                         : "border-border bg-card/50"
                     )}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">{info.icon}</span>
+                      <img
+                        src={`/${info.image}`}
+                        alt={info.name}
+                        className="w-20 h-20 object-contain"
+                      />
                       <span className="font-display text-lg">{info.name}</span>
-                      {isWinner && <Check className="w-5 h-5 text-primary ml-auto" />}
+                      {isWinner && (
+                        <Check className="w-5 h-5 text-primary ml-auto" />
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Users className="w-4 h-4" />
-                      <span>{votes} vote{votes !== 1 ? "s" : ""}</span>
+                      <span>
+                        {votes} vote{votes !== 1 ? "s" : ""}
+                      </span>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={handleConfirmFinal}
-            >
+            <Button size="lg" className="w-full" onClick={handleConfirmFinal}>
               Lancer le jeu
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -148,18 +154,18 @@ export default function ProductPage() {
               <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                 <Users className="w-12 h-12 text-primary" />
               </div>
-              
+
               <h2 className="font-display text-3xl mb-2">Vote du produit</h2>
               <p className="text-muted-foreground mb-4">
                 Joueur {currentVoterIndex + 1} sur {players.length}
               </p>
-              
+
               <div className="bg-card border border-border rounded-xl p-6 mb-8">
                 <span className="font-display text-4xl text-primary text-glow">
                   {currentVoter.name}
                 </span>
               </div>
-              
+
               <Button size="lg" onClick={handleStartGate} className="px-8">
                 Je suis {currentVoter.name}
               </Button>
@@ -182,8 +188,8 @@ export default function ProductPage() {
               {currentVoter?.name}, votez pour un produit
             </h1>
             <p className="text-muted-foreground">
-              Votant {currentVoterIndex + 1} sur {players.length} • 
-              Le produit avec le plus de votes sera choisi
+              Votant {currentVoterIndex + 1} sur {players.length} • Le produit
+              avec le plus de votes sera choisi
             </p>
           </div>
 
@@ -191,11 +197,11 @@ export default function ProductPage() {
             {PRODUCTS.map((product) => {
               const info = PRODUCT_INFO[product];
               return (
-                <CardOption
+                <ProductOption
                   key={product}
                   title={info.name}
                   description={info.description}
-                  icon={<span className="text-3xl">{info.icon}</span>}
+                  image={info.image}
                   selected={selectedProduct === product}
                   onClick={() => setSelectedProduct(product)}
                 />

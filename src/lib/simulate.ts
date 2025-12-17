@@ -20,7 +20,18 @@ import {
   DIVERSIFY_FIXED_COST_PER_ROUND,
   PRICE_TABLE,
   PRICE_DEMAND_MULT,
+  LOAN_RATE_PER_ROUND,
+  LOAN_TERM_ROUNDS,
+  VARIABLE_LEVER_CONFIG,
 } from "./config";
+
+const clampInvestment = (
+  lever: keyof typeof VARIABLE_LEVER_CONFIG,
+  amount: number
+) => {
+  const config = VARIABLE_LEVER_CONFIG[lever];
+  return Math.min(Math.max(amount, config.min), config.max);
+};
 
 export function simulateRound(params: {
   round: number;
@@ -31,76 +42,168 @@ export function simulateRound(params: {
 }): { updatedPlayer: Player; result: PlayerRoundResult } {
   const { round, event, productInitial, player, decision } = params;
   const notes: string[] = [];
-  
+
   // Clone player for mutation
   let cash = player.cash;
   let quality = player.quality;
   let brand = player.brand;
   let capacity = player.capacity;
   let portfolio = [...player.portfolio];
-  
+
+  let loan = player.loan ? { ...player.loan } : undefined;
+  let debtCost = 0;
+
+  if (loan && loan.principalRemaining > 0) {
+    const interest = loan.principalRemaining * LOAN_RATE_PER_ROUND;
+
+    // payment = paiement "prévu" (principal fixe) + intérêts implicites via interest calc
+    const payment = Math.min(
+      loan.payment + interest,
+      loan.principalRemaining + interest
+    );
+
+    debtCost = payment;
+
+    const principalPaid = Math.max(0, payment - interest);
+    loan.principalRemaining = Math.max(
+      0,
+      loan.principalRemaining - principalPaid
+    );
+
+    notes.push(`💳 Service de la dette: -${Math.round(payment)} k€`);
+
+    if (loan.principalRemaining === 0) {
+      notes.push(`✅ Prêt remboursé: vous retrouvez plus de flexibilité`);
+    }
+  }
+
   // Determine price level (default MID if not PRICE lever)
   let priceLevel: PriceLevel = "MID";
   let investmentCost = 0;
-  
+
   // Step 1: Apply lever
   switch (decision.lever) {
     case "PRICE":
       priceLevel = decision.price;
-      notes.push(`Prix ${priceLevel === "LOW" ? "bas" : priceLevel === "PREMIUM" ? "premium" : "moyen"} appliqué`);
+      notes.push(
+        `Prix ${
+          priceLevel === "LOW"
+            ? "bas"
+            : priceLevel === "PREMIUM"
+            ? "premium"
+            : "moyen"
+        } appliqué`
+      );
       break;
     case "RD":
-      cash -= RD_COST;
-      investmentCost = RD_COST;
-      quality += RD_QUALITY_DELTA;
-      notes.push(`R&D: qualité +${(RD_QUALITY_DELTA * 100).toFixed(0)}%`);
+      (() => {
+        const investment = clampInvestment("RD", decision.amount);
+        const qualityDelta = RD_QUALITY_DELTA * (investment / RD_COST);
+        cash -= investment;
+        investmentCost = investment;
+        quality += qualityDelta;
+        notes.push(
+          `R&D: qualité +${(qualityDelta * 100).toFixed(0)}% (${investment} k€)`
+        );
+      })();
       break;
     case "CAPACITY":
-      cash -= CAPEX_COST;
-      investmentCost = CAPEX_COST;
-      capacity += CAPACITY_DELTA;
-      notes.push(`Capacité: +${CAPACITY_DELTA} unités/an`);
+      (() => {
+        const investment = clampInvestment("CAPACITY", decision.amount);
+        const capacityDelta = Math.round(
+          CAPACITY_DELTA * (investment / CAPEX_COST)
+        );
+        cash -= investment;
+        investmentCost = investment;
+        capacity += capacityDelta;
+        notes.push(`Capacité: +${capacityDelta} unités/an (${investment} k€)`);
+      })();
       break;
     case "BRAND":
-      cash -= BRAND_COST;
-      investmentCost = BRAND_COST;
-      brand += BRAND_DELTA;
-      notes.push(`Marketing: image +${(BRAND_DELTA * 100).toFixed(0)}%`);
+      (() => {
+        const investment = clampInvestment("BRAND", decision.amount);
+        const brandDelta = BRAND_DELTA * (investment / BRAND_COST);
+        cash -= investment;
+        investmentCost = investment;
+        brand += brandDelta;
+        notes.push(
+          `Marketing: image +${(brandDelta * 100).toFixed(
+            0
+          )}% (${investment} k€)`
+        );
+      })();
       break;
     case "DIVERSIFY":
-      cash -= DIVERSIFY_COST;
-      investmentCost = DIVERSIFY_COST;
-      portfolio.push(decision.addProduct);
-      notes.push(`Nouveau produit lancé: ${decision.addProduct}`);
+      (() => {
+        const investment = clampInvestment("DIVERSIFY", decision.amount);
+        cash -= investment;
+        investmentCost = investment;
+        portfolio.push(decision.addProduct);
+        notes.push(
+          `Nouveau produit lancé: ${decision.addProduct} (${investment} k€)`
+        );
+      })();
       break;
+    case "LOAN": {
+      const amount = decision.amount;
+
+      if (loan && loan.principalRemaining > 0) {
+        notes.push("⚠️ Prêt refusé: un prêt est déjà actif");
+        break;
+      }
+
+      cash += amount;
+
+      const term = LOAN_TERM_ROUNDS;
+      const paymentPrincipal = Math.ceil(amount / term); // principal fixe / round
+
+      loan = {
+        principalRemaining: amount,
+        payment: paymentPrincipal,
+        rate: LOAN_RATE_PER_ROUND,
+      };
+
+      notes.push(
+        `🏦 Prêt obtenu: +${amount} k€ (remboursement sur ${term} rounds)`
+      );
+      notes.push(
+        "🏦 Financement externe : vous gagnez du cash maintenant, mais vous réduisez votre liberté stratégique sur les prochains rounds."
+      );
+      break;
+    }
   }
-  
+
   // Step 2: Calculate base demand
-  let demand = BASE_MARKET_DEMAND * event.demandMult * PRICE_DEMAND_MULT[priceLevel];
-  
+  let demand =
+    BASE_MARKET_DEMAND * event.demandMult * PRICE_DEMAND_MULT[priceLevel];
+
   // Step 3: Portfolio bonus
   let diversifyFixedCost = 0;
   const isDiversified = portfolio.length > 1;
   if (isDiversified) {
     demand *= 1.06;
-    diversifyFixedCost = DIVERSIFY_FIXED_COST_PER_ROUND * (portfolio.length - 1);
+    diversifyFixedCost =
+      DIVERSIFY_FIXED_COST_PER_ROUND * (portfolio.length - 1);
     notes.push(`Bonus diversification: demande +6%`);
   }
-  
+
   // Step 4: Event-specific conditional effects
   const hasProtein = portfolio.includes("PROTEIN");
   const hasBulk = portfolio.includes("BULK");
-  const hasPerformance = productInitial === "PERFORMANCE" || portfolio.includes("PERFORMANCE");
-  
+  const hasPerformance =
+    productInitial === "PERFORMANCE" || portfolio.includes("PERFORMANCE");
+
   // ========== HEATWAVE ==========
   if (event.key === "HEATWAVE") {
     // Capacity check - opportunity missed if demand > capacity
     if (demand > capacity) {
       const missed = Math.floor(demand - capacity);
-      notes.push(`⚠️ Opportunité ratée: ${missed} unités non produites (capacité insuffisante)`);
+      notes.push(
+        `⚠️ Opportunité ratée: ${missed} unités non produites (capacité insuffisante)`
+      );
     }
   }
-  
+
   // ========== COLD_WINTER ==========
   if (event.key === "COLD_WINTER") {
     // Brand shield - strong brand resists the downturn
@@ -111,7 +214,7 @@ export function simulateRound(params: {
       notes.push(`💡 Une image de marque > 120% aurait atténué la baisse`);
     }
   }
-  
+
   // ========== ECON_CRISIS ==========
   if (event.key === "ECON_CRISIS") {
     // Premium severely penalized
@@ -121,11 +224,11 @@ export function simulateRound(params: {
     }
     // Low price mitigates the crisis effect
     if (priceLevel === "LOW") {
-      demand *= 1.10;
+      demand *= 1.1;
       notes.push(`✓ Prix bas attractif en période de crise (+10%)`);
     }
   }
-  
+
   // ========== ECON_RECOVERY ==========
   if (event.key === "ECON_RECOVERY") {
     // Premium slightly favored during recovery
@@ -136,7 +239,7 @@ export function simulateRound(params: {
       notes.push(`💡 Un prix premium aurait mieux profité de la reprise`);
     }
   }
-  
+
   // ========== NUTRI_LAW ==========
   if (event.key === "NUTRI_LAW") {
     // Performance products penalized
@@ -149,10 +252,12 @@ export function simulateRound(params: {
       demand *= 1.06;
       notes.push(`✓ Qualité R&D: conformité facilitée (+6%)`);
     } else if (hasPerformance) {
-      notes.push(`💡 Une qualité R&D > 120% aurait réduit l'impact réglementaire`);
+      notes.push(
+        `💡 Une qualité R&D > 120% aurait réduit l'impact réglementaire`
+      );
     }
   }
-  
+
   // ========== INGREDIENT_TAX ==========
   // costMult is handled below, but add conditional effects
   if (event.key === "INGREDIENT_TAX") {
@@ -168,7 +273,7 @@ export function simulateRound(params: {
       notes.push(`💡 Une qualité > 115% améliorerait l'acceptation du surcoût`);
     }
   }
-  
+
   // ========== FITNESS_BOOM ==========
   if (event.key === "FITNESS_BOOM") {
     // Protein and Bulk products benefit
@@ -181,50 +286,58 @@ export function simulateRound(params: {
     // Diversified companies capture more of the trend
     if (isDiversified) {
       demand *= 1.05;
-      notes.push(`✓ Gamme diversifiée: meilleure captation de la tendance (+5%)`);
+      notes.push(
+        `✓ Gamme diversifiée: meilleure captation de la tendance (+5%)`
+      );
     } else {
       notes.push(`💡 Une diversification aurait capté plus de demande`);
     }
   }
-  
+
   // ========== WELLNESS_WAVE ==========
   if (event.key === "WELLNESS_WAVE") {
     // Strong brand benefits
     if (brand > 1.15) {
-      demand *= 1.10;
+      demand *= 1.1;
       notes.push(`✓ Image de marque forte: vous incarnez le bien-être (+10%)`);
     }
     // Low price damages brand perception
     if (priceLevel === "LOW") {
       brand *= 0.97; // Slight brand damage
-      notes.push(`⚠️ Prix bas: image ternie par la perception "low-cost" (-3% marque)`);
+      notes.push(
+        `⚠️ Prix bas: image ternie par la perception "low-cost" (-3% marque)`
+      );
     }
   }
-  
+
   // Step 5: Capacity constraint
   const unitsSold = Math.min(Math.floor(demand), capacity);
-  
+
   // Step 6: Revenue
-  const revenue = unitsSold * PRICE_TABLE[priceLevel].price;
-  
+  const revenue = (unitsSold * PRICE_TABLE[priceLevel].price) / 1000;
+
   // Step 7: Costs
-  const unitCost = BASE_COST_PER_UNIT * (event.costMult ?? 1);
-  const prodCosts = unitsSold * unitCost;
-  const totalCosts = prodCosts + investmentCost + diversifyFixedCost;
-  
+  const unitCostEur = BASE_COST_PER_UNIT * (event.costMult ?? 1);
+  const prodCosts = (unitsSold * unitCostEur) / 1000;
+  const totalCosts = prodCosts + investmentCost + diversifyFixedCost + debtCost;
+
   // Step 8: Profit and cash
   const profit = revenue - totalCosts;
   const cashEnd = cash + profit;
-  
+  console.log("cashend", cashEnd, cash, profit);
+
   if (cashEnd < 0) {
-    notes.push(`⚠️ Entreprise en dette!`);
+    notes.push(
+      "⚠️ Dette mal maîtrisée : votre trésorerie devient critique, " +
+        "ce qui pénalise la satisfaction et la crédibilité de l’entreprise."
+    );
   }
-  
+
   // Step 9: Satisfaction (0-100) with event-specific modifiers
   let satisfaction = 60;
   satisfaction += (quality - 1.0) * 25;
   satisfaction += (brand - 1.0) * 18;
-  
+
   // Event-specific satisfaction modifiers
   if (event.key === "ECON_CRISIS") {
     if (priceLevel === "PREMIUM") {
@@ -237,18 +350,22 @@ export function simulateRound(params: {
       notes.push(`✓ Image de marque: fidélité client maintenue`);
     }
   }
-  
+
   if (priceLevel === "LOW") {
     satisfaction -= 5; // Low price = perceived lower quality
   }
-  
+
   // Clamp satisfaction 0-100
   satisfaction = Math.max(0, Math.min(100, Math.round(satisfaction)));
-  
+
   // Step 10: Market share
-  const offerStrength = (quality * 0.45) + (brand * 0.35) + (PRICE_DEMAND_MULT[priceLevel] * 0.20);
-  const marketShare = Math.max(0, Math.min(1, offerStrength / (offerStrength + BASE_COMPETITOR_STRENGTH)));
-  
+  const offerStrength =
+    quality * 0.45 + brand * 0.35 + PRICE_DEMAND_MULT[priceLevel] * 0.2;
+  const marketShare = Math.max(
+    0,
+    Math.min(1, offerStrength / (offerStrength + BASE_COMPETITOR_STRENGTH))
+  );
+
   // Build result with proper rounding
   const result: PlayerRoundResult = {
     round,
@@ -263,16 +380,18 @@ export function simulateRound(params: {
     satisfaction,
     notes,
   };
-  
+
   // Update player
   const newHistory = [...player.history, result];
   const newProfitCum = player.profitCum + profit;
   // Calculate satisfaction average only for rounds > 0 (exclude baseline from avg)
-  const roundsForAvg = newHistory.filter(r => r.round > 0);
-  const newSatisfactionAvg = roundsForAvg.length > 0 
-    ? roundsForAvg.reduce((sum, r) => sum + r.satisfaction, 0) / roundsForAvg.length
-    : satisfaction;
-  
+  const roundsForAvg = newHistory.filter((r) => r.round > 0);
+  const newSatisfactionAvg =
+    roundsForAvg.length > 0
+      ? roundsForAvg.reduce((sum, r) => sum + r.satisfaction, 0) /
+        roundsForAvg.length
+      : satisfaction;
+
   const updatedPlayer: Player = {
     ...player,
     cash: Math.round(cashEnd),
@@ -285,8 +404,16 @@ export function simulateRound(params: {
     profitCum: Math.round(newProfitCum),
     marketShareLast: marketShare,
     satisfactionAvg: Math.round(newSatisfactionAvg),
+    loan:
+      loan && loan.principalRemaining > 0
+        ? {
+            principalRemaining: Math.round(loan.principalRemaining),
+            payment: Math.round(loan.payment),
+            rate: loan.rate,
+          }
+        : undefined,
   };
-  
+
   return { updatedPlayer, result };
 }
 

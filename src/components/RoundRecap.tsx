@@ -1,6 +1,13 @@
 import { PlayerRoundResult } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, DollarSign, Package, Smile, PieChart } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Package,
+  Smile,
+  PieChart,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RoundRecapProps {
@@ -9,13 +16,19 @@ interface RoundRecapProps {
   onContinue: () => void;
 }
 
-export function RoundRecap({ result, playerName, onContinue }: RoundRecapProps) {
+export function RoundRecap({
+  result,
+  playerName,
+  onContinue,
+}: RoundRecapProps) {
   const isProfitable = result.profit > 0;
 
   return (
     <div className="max-w-2xl mx-auto animate-slide-up">
       <div className="text-center mb-6">
-        <h2 className="font-display text-3xl mb-2">Résultats de {playerName}</h2>
+        <h2 className="font-display text-3xl mb-2">
+          Résultats de {playerName}
+        </h2>
         <p className="text-muted-foreground">Année {result.round}</p>
       </div>
 
@@ -29,19 +42,27 @@ export function RoundRecap({ result, playerName, onContinue }: RoundRecapProps) 
           <StatCard
             icon={<DollarSign className="w-5 h-5" />}
             label="Revenus"
-            value={`${result.revenue}€`}
+            value={`${result.revenue.toLocaleString()} k€`}
             color="energy"
           />
           <StatCard
             icon={<TrendingDown className="w-5 h-5" />}
             label="Coûts"
-            value={`${result.costs}€`}
+            value={`${result.costs.toLocaleString()} k€`}
             color="warning"
           />
           <StatCard
-            icon={isProfitable ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+            icon={
+              isProfitable ? (
+                <TrendingUp className="w-5 h-5" />
+              ) : (
+                <TrendingDown className="w-5 h-5" />
+              )
+            }
             label="Profit"
-            value={`${result.profit > 0 ? "+" : ""}${result.profit}€`}
+            value={`${
+              result.profit > 0 ? "+" : ""
+            }${result.profit.toLocaleString()}`}
             color={isProfitable ? "energy" : "danger"}
             highlight
           />
@@ -61,11 +82,13 @@ export function RoundRecap({ result, playerName, onContinue }: RoundRecapProps) 
         <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between text-lg">
             <span className="text-muted-foreground">Cash disponible</span>
-            <span className={cn(
-              "font-display text-2xl",
-              result.cashEnd >= 0 ? "text-energy" : "text-danger"
-            )}>
-              {result.cashEnd}€
+            <span
+              className={cn(
+                "font-display text-2xl",
+                result.cashEnd >= 0 ? "text-energy" : "text-danger"
+              )}
+            >
+              {result.cashEnd.toLocaleString()} k€
             </span>
           </div>
         </div>
@@ -107,20 +130,24 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={cn(
-      "p-3 rounded-lg",
-      highlight ? "bg-primary/10 border border-primary/30" : "bg-secondary/50"
-    )}>
+    <div
+      className={cn(
+        "p-3 rounded-lg",
+        highlight ? "bg-primary/10 border border-primary/30" : "bg-secondary/50"
+      )}
+    >
       <div className="flex items-center gap-2 text-muted-foreground mb-1">
         {icon}
         <span className="text-xs">{label}</span>
       </div>
-      <div className={cn(
-        "font-display text-xl",
-        color === "energy" && "text-energy",
-        color === "warning" && "text-warning",
-        color === "danger" && "text-danger"
-      )}>
+      <div
+        className={cn(
+          "font-display text-xl",
+          color === "energy" && "text-energy",
+          color === "warning" && "text-warning",
+          color === "danger" && "text-danger"
+        )}
+      >
         {value}
       </div>
     </div>
