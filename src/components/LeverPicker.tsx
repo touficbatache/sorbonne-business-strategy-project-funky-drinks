@@ -106,10 +106,10 @@ export function LeverPicker({ player, onSubmit }: LeverPickerProps) {
   const getCostBadge = (lever: LeverKey) => {
     if (isVariableLever(lever)) {
       const { min, max } = VARIABLE_LEVER_CONFIG[lever];
-      return `${min}-${max}`;
+      return `${min}k€-${max}k€`;
     }
     const cost = LEVER_INFO[lever].cost;
-    return cost > 0 ? `${cost}` : undefined;
+    return cost > 0 ? `${cost}k€` : undefined;
   };
 
   const canAfford = (lever: LeverKey) => {
