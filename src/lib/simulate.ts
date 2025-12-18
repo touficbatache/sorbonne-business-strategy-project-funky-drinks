@@ -210,12 +210,25 @@ export function simulateRound(params: {
 
   // ========== COLD_WINTER ==========
   if (event.key === "COLD_WINTER") {
-    // Brand shield - strong brand resists the downturn
-    if (brand > 1.2) {
-      demand *= 1.08;
-      notes.push(`✓ Image forte: résistance à la baisse (+8%)`);
+    // Résilience basée sur amélioration de marque (stratégique, pas arbitraire)
+    const brandLevel = Math.max(0, brand - 1.0); // stock de marque accumulé
+    const brandBoostFromLevel = Math.min(0.1, brandLevel * 0.7); // cap +10%
+
+    const brandBoostFromThisRound = Math.min(0.12, brandGainThisRound * 1.5); // cap +12%
+
+    const totalBoost = brandBoostFromLevel + brandBoostFromThisRound;
+
+    if (totalBoost > 0.001) {
+      demand *= 1 + totalBoost;
+      notes.push(
+        `✓ Image de marque atténue l’hiver: demande +${Math.round(
+          totalBoost * 100
+        )}%`
+      );
     } else {
-      notes.push(`💡 Une image de marque > 120% aurait atténué la baisse`);
+      notes.push(
+        `💡 Investir en marketing (même un peu) aide à résister aux hivers difficiles`
+      );
     }
   }
 
@@ -246,18 +259,28 @@ export function simulateRound(params: {
 
   // ========== NUTRI_LAW ==========
   if (event.key === "NUTRI_LAW") {
-    // Performance products penalized
+    // Performance products penalized by regulation
     if (hasPerformance) {
       demand *= 0.88;
       notes.push(`⚠️ Produit Performance scruté par la régulation (-12%)`);
     }
-    // High quality mitigates regulatory impact
-    if (quality > 1.2) {
-      demand *= 1.06;
-      notes.push(`✓ Qualité R&D: conformité facilitée (+6%)`);
+
+    // R&D improvement mitigates regulatory impact (dynamic, no hard threshold)
+    if (qualityGainThisRound > 0) {
+      const mitigation = Math.min(
+        0.08,
+        qualityGainThisRound * 0.7 + Math.max(0, quality - 1.0) * 0.4
+      );
+      demand *= 1 + mitigation;
+
+      notes.push(
+        `✓ Amélioration R&D ce round: conformité renforcée (+${Math.round(
+          mitigation * 100
+        )}%)`
+      );
     } else if (hasPerformance) {
       notes.push(
-        `💡 Une qualité R&D > 120% aurait réduit l'impact réglementaire`
+        `💡 Investir en R&D ce round aurait atténué l'impact de la réglementation`
       );
     }
   }
