@@ -4,7 +4,7 @@ export const TOTAL_ROUNDS = 5;
 export const STARTING_CASH = 100;
 
 // Le marché & unités restent en "unités vendues" (bouteilles)
-export const BASE_MARKET_DEMAND = 100000;
+export const BASE_MARKET_DEMAND = 150000;
 
 // Coût unitaire en € / unité (bouteille)
 export const BASE_COST_PER_UNIT = 1.4;
@@ -30,8 +30,8 @@ export const DIVERSIFY_FIXED_COST_PER_ROUND = 25;
 export const VARIABLE_LEVER_CONFIG = {
   BRAND: { min: 10, max: 150, step: 10, defaultValue: BRAND_COST },
   RD: { min: 50, max: 190, step: 10, defaultValue: RD_COST },
-  CAPACITY: { min: 100, max: 200, step: 10, defaultValue: CAPEX_COST },
-  DIVERSIFY: { min: 100, max: 300, step: 10, defaultValue: DIVERSIFY_COST },
+  CAPACITY: { min: 50, max: 300, step: 10, defaultValue: CAPEX_COST },
+  DIVERSIFY: { min: 70, max: 400, step: 10, defaultValue: DIVERSIFY_COST },
 } as const;
 
 export const LOAN_OPTIONS = [150, 300] as const;

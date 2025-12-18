@@ -344,8 +344,18 @@ export function simulateRound(params: {
     }
   }
 
-  // Step 5: Capacity constraint
-  const unitsSold = Math.min(Math.floor(demand), capacity);
+  // Step 5A: Market share
+  const offerStrength =
+    quality * 0.45 + brand * 0.35 + PRICE_DEMAND_MULT[priceLevel] * 0.2;
+  const marketShare = Math.max(
+    0,
+    Math.min(1, offerStrength / (offerStrength + BASE_COMPETITOR_STRENGTH))
+  );
+
+  // Step 5B: Demand captured by your company
+  const yourDemand = demand * marketShare;
+  console.log("yourDemand", yourDemand, demand, marketShare);
+  const unitsSold = Math.min(Math.floor(yourDemand), capacity);
 
   // Step 6: Revenue
   const revenue = (unitsSold * PRICE_TABLE[priceLevel].price) / 1000;
@@ -391,14 +401,6 @@ export function simulateRound(params: {
 
   // Clamp satisfaction 0-100
   satisfaction = Math.max(0, Math.min(100, Math.round(satisfaction)));
-
-  // Step 10: Market share
-  const offerStrength =
-    quality * 0.45 + brand * 0.35 + PRICE_DEMAND_MULT[priceLevel] * 0.2;
-  const marketShare = Math.max(
-    0,
-    Math.min(1, offerStrength / (offerStrength + BASE_COMPETITOR_STRENGTH))
-  );
 
   // Build result with proper rounding
   const result: PlayerRoundResult = {
