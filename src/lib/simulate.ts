@@ -48,8 +48,9 @@ export function simulateRound(params: {
   let quality = player.quality;
   let brand = player.brand;
   let capacity = player.capacity;
-  let portfolio = [...player.portfolio];
+  const portfolio = [...player.portfolio];
   const qualityStartOfRound = quality;
+  const brandStartOfRound = brand;
 
   let loan = player.loan ? { ...player.loan } : undefined;
   let debtCost = 0;
@@ -175,6 +176,7 @@ export function simulateRound(params: {
   }
 
   const qualityGainThisRound = Math.max(0, quality - qualityStartOfRound);
+  const brandGainThisRound = Math.max(0, brand - brandStartOfRound);
 
   // Step 2: Calculate base demand
   let demand =
@@ -353,16 +355,33 @@ export function simulateRound(params: {
 
   // ========== WELLNESS_WAVE ==========
   if (event.key === "WELLNESS_WAVE") {
-    // Strong brand benefits
-    if (brand > 1.15) {
-      demand *= 1.1;
-      notes.push(`✓ Image de marque forte: vous incarnez le bien-être (+10%)`);
-    }
-    // Low price damages brand perception
-    if (priceLevel === "LOW") {
-      brand *= 0.97; // Slight brand damage
+    // La vague bien-être favorise les marques qui investissent / progressent en image
+    const brandLevel = Math.max(0, brand - 1.0);
+    const boostFromLevel = Math.min(0.08, brandLevel * 0.6); // cap +8%
+    const boostFromThisRound = Math.min(0.12, brandGainThisRound * 1.8); // cap +12%
+    const totalBoost = boostFromLevel + boostFromThisRound; // cap implicite via caps
+
+    if (totalBoost > 0.001) {
+      demand *= 1 + totalBoost;
       notes.push(
-        `⚠️ Prix bas: image ternie par la perception "low-cost" (-3% marque)`
+        `✓ Vague bien-être: votre image de marque porte la demande (+${Math.round(
+          totalBoost * 100
+        )}%)`
+      );
+    } else {
+      notes.push(
+        `💡 Investir en marketing ce round vous ferait mieux profiter de la vague bien-être`
+      );
+    }
+
+    // Low price damages brand perception (effet cohérent, mais limité)
+    if (priceLevel === "LOW") {
+      const penalty = 0.02; // -2% plutôt que -3% si tu veux moins punitif
+      brand *= 1 - penalty;
+      notes.push(
+        `⚠️ Prix bas: perception "low-cost" (-${Math.round(
+          penalty * 100
+        )}% marque)`
       );
     }
   }
