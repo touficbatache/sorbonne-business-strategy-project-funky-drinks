@@ -18,9 +18,9 @@ import { PRODUCT_INFO } from "@/lib/config";
 
 const STEPS = [
   { id: "setup", label: "Joueurs" },
-  { id: "product", label: "Produit" },
-  { id: "rounds", label: "Rounds" },
-  { id: "final", label: "Final" },
+  { id: "product", label: "Choix du produit" },
+  { id: "rounds", label: "Déroulement du jeu" },
+  { id: "final", label: "Résultats" },
 ];
 
 export default function GamePage() {
@@ -60,9 +60,9 @@ export default function GamePage() {
       <div className="container py-8">
         <Stepper steps={STEPS} currentStep={stepIndex} />
 
-        <p className="mt-4 text-xs text-muted-foreground italic border border-border/60 rounded-md px-3 py-2 bg-card/30">
+        {/* <p className="mt-4 text-xs text-muted-foreground italic border border-border/60 rounded-md px-3 py-2 bg-card/30">
           Les montants sont exprimés en unités budgétaires abstraites (k€).
-        </p>
+        </p> */}
 
         <div className="mt-8 flex gap-8">
           {/* Sidebar - hidden during gate, minimal during decision */}

@@ -4,7 +4,7 @@ export const TOTAL_ROUNDS = 5;
 export const STARTING_CASH = 100;
 
 // Le marché & unités restent en "unités vendues" (bouteilles)
-export const BASE_MARKET_DEMAND = 10000;
+export const BASE_MARKET_DEMAND = 100000;
 
 // Coût unitaire en € / unité (bouteille)
 export const BASE_COST_PER_UNIT = 1.4;
@@ -12,7 +12,7 @@ export const BASE_COST_PER_UNIT = 1.4;
 export const BASE_COMPETITOR_STRENGTH = 1.15;
 
 // Capacité en unités/an (bouteilles)
-export const START_CAPACITY = 6000;
+export const START_CAPACITY = 60000;
 
 // Leviers en k€
 export const RD_COST = 120;
@@ -22,7 +22,7 @@ export const BRAND_COST = 90;
 export const BRAND_DELTA = 0.12;
 
 export const CAPEX_COST = 150;
-export const CAPACITY_DELTA = 2000;
+export const CAPACITY_DELTA = 20000;
 
 export const DIVERSIFY_COST = 200;
 export const DIVERSIFY_FIXED_COST_PER_ROUND = 25;

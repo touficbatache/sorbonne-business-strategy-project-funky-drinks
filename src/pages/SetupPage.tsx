@@ -9,15 +9,15 @@ import { Plus, Trash2, ArrowRight } from "lucide-react";
 
 const STEPS = [
   { id: "setup", label: "Joueurs" },
-  { id: "product", label: "Produit" },
-  { id: "rounds", label: "Rounds" },
-  { id: "final", label: "Final" },
+  { id: "product", label: "Choix du produit" },
+  { id: "rounds", label: "Déroulement du jeu" },
+  { id: "final", label: "Résultats" },
 ];
 
 export default function SetupPage() {
   const navigate = useNavigate();
   const { setPlayers, setSeed } = useGameStore();
-  
+
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [newName, setNewName] = useState("");
 
@@ -48,7 +48,9 @@ export default function SetupPage() {
         <Stepper steps={STEPS} currentStep={0} />
 
         <div className="max-w-md mx-auto mt-12 animate-slide-up">
-          <h1 className="font-display text-4xl text-center mb-8">Créer les joueurs</h1>
+          <h1 className="font-display text-4xl text-center mb-8">
+            Créer les joueurs
+          </h1>
 
           <div className="space-y-4 mb-8">
             <div className="flex gap-2">
@@ -109,7 +111,8 @@ export default function SetupPage() {
 
           {!canContinue && playerNames.length > 0 && (
             <p className="text-sm text-muted-foreground text-center mt-4">
-              Ajoutez au moins {2 - playerNames.length} joueur{2 - playerNames.length > 1 ? "s" : ""} de plus
+              Ajoutez au moins {2 - playerNames.length} joueur
+              {2 - playerNames.length > 1 ? "s" : ""} de plus
             </p>
           )}
         </div>

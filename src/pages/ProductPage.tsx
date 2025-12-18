@@ -12,9 +12,9 @@ import { ProductOption } from "@/components/ProductOption";
 
 const STEPS = [
   { id: "setup", label: "Joueurs" },
-  { id: "product", label: "Produit" },
-  { id: "rounds", label: "Rounds" },
-  { id: "final", label: "Final" },
+  { id: "product", label: "Choix du produit" },
+  { id: "rounds", label: "Déroulement du jeu" },
+  { id: "final", label: "Résultats" },
 ];
 
 const PRODUCTS: ProductType[] = ["LEAN", "BULK", "PROTEIN", "PERFORMANCE"];

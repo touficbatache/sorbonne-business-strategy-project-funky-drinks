@@ -62,7 +62,7 @@ export function RoundRecap({
             label="Profit"
             value={`${
               result.profit > 0 ? "+" : ""
-            }${result.profit.toLocaleString()}`}
+            }${result.profit.toLocaleString()} k€`}
             color={isProfitable ? "energy" : "danger"}
             highlight
           />

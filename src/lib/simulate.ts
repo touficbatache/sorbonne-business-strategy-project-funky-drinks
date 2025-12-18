@@ -49,6 +49,7 @@ export function simulateRound(params: {
   let brand = player.brand;
   let capacity = player.capacity;
   let portfolio = [...player.portfolio];
+  const qualityStartOfRound = quality;
 
   let loan = player.loan ? { ...player.loan } : undefined;
   let debtCost = 0;
@@ -173,6 +174,8 @@ export function simulateRound(params: {
     }
   }
 
+  const qualityGainThisRound = Math.max(0, quality - qualityStartOfRound);
+
   // Step 2: Calculate base demand
   let demand =
     BASE_MARKET_DEMAND * event.demandMult * PRICE_DEMAND_MULT[priceLevel];
@@ -188,6 +191,7 @@ export function simulateRound(params: {
   }
 
   // Step 4: Event-specific conditional effects
+  let effectiveCostMult = event.costMult ?? 1;
   const hasProtein = portfolio.includes("PROTEIN");
   const hasBulk = portfolio.includes("BULK");
   const hasPerformance =
@@ -261,16 +265,46 @@ export function simulateRound(params: {
   // ========== INGREDIENT_TAX ==========
   // costMult is handled below, but add conditional effects
   if (event.key === "INGREDIENT_TAX") {
-    // Premium can pass costs to consumers
+    // Premium répercute mieux la taxe => effet coût plus faible mais un peu moins de volume
     if (priceLevel === "PREMIUM") {
+      effectiveCostMult *= 0.9; // (au lieu de 0.85) évite premium auto-win
+      demand *= 0.94;
       notes.push(`✓ Le prix premium absorbe mieux la taxe`);
+      notes.push(`⚖️ Premium: marge protégée mais volume légèrement réduit`);
     }
-    // High quality improves perception despite costs
-    if (quality > 1.15) {
-      demand *= 1.04;
-      notes.push(`✓ Qualité perçue: les clients acceptent le surcoût (+4%)`);
+
+    // Low = marge fine => la taxe fait un peu plus mal
+    if (priceLevel === "LOW") {
+      effectiveCostMult *= 1.06; // un peu moins violent que 1.08
+      notes.push(`⚠️ Prix bas: taxe plus difficile à absorber`);
+    }
+
+    // --- R&D / Qualité atténue l'impact de la taxe ---
+    // Effet "stratégie" : plus la qualité est élevée OU progresse ce round,
+    // plus la taxe pèse moins sur les coûts unitaires (sourcing, formulation, conformité).
+    const qualityLevel = Math.max(0, quality - 1.0); // ex: 1.08 => 0.08
+    const reliefFromLevel = Math.min(0.12, qualityLevel * 0.8); // cap -12%
+
+    const reliefFromThisRound = Math.min(0.18, qualityGainThisRound * 1.6); // cap -18%
+
+    const totalRelief = Math.min(0.25, reliefFromLevel + reliefFromThisRound); // cap global -25%
+
+    if (totalRelief > 0.001) {
+      effectiveCostMult *= 1 - totalRelief;
+
+      // petit bonus de demande (acceptation du surcoût) — optionnel mais logique
+      const demandBoost = Math.min(0.06, totalRelief * 0.35); // cap +6%
+      demand *= 1 + demandBoost;
+
+      notes.push(
+        `✅ R&D/qualité atténue la taxe: coûts -${Math.round(
+          totalRelief * 100
+        )}%, demande +${Math.round(demandBoost * 100)}%`
+      );
     } else {
-      notes.push(`💡 Une qualité > 115% améliorerait l'acceptation du surcoût`);
+      notes.push(
+        `💡 Investir en R&D (même un peu) réduit l'impact de la taxe sur vos coûts`
+      );
     }
   }
 
@@ -317,7 +351,7 @@ export function simulateRound(params: {
   const revenue = (unitsSold * PRICE_TABLE[priceLevel].price) / 1000;
 
   // Step 7: Costs
-  const unitCostEur = BASE_COST_PER_UNIT * (event.costMult ?? 1);
+  const unitCostEur = BASE_COST_PER_UNIT * effectiveCostMult;
   const prodCosts = (unitsSold * unitCostEur) / 1000;
   const totalCosts = prodCosts + investmentCost + diversifyFixedCost + debtCost;
 

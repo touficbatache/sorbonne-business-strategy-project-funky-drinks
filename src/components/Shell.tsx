@@ -9,7 +9,7 @@ interface ShellProps {
 
 export function Shell({ children }: ShellProps) {
   const location = useLocation();
-  const isGame = location.pathname === "/game";
+  const isHome = location.pathname === "/";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,8 +43,26 @@ export function Shell({ children }: ShellProps) {
         </div>
       </header> */}
 
-      <header className="absolute top-6 right-6 z-10">
-        <nav className="flex items-center gap-2">
+      {!isHome && (
+        <Link to="/" className="absolute top-6 left-6 z-10">
+          <img src="/logo.png" alt="FunkyDrinks home" className="h-20 w-auto" />
+        </Link>
+      )}
+
+      <Button
+        className="absolute top-6 right-6 z-10"
+        variant="ghost"
+        size="sm"
+        asChild
+      >
+        <Link to="/rules">
+          <BookOpen className="w-4 h-4 mr-2" />
+          Règles
+        </Link>
+      </Button>
+
+      {/* <header className="absolute top-6 left-6 right-6 z-10">
+        <nav className="flex items-center justify-between gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link to="/">
               <Home className="w-4 h-4 mr-2" />
@@ -58,7 +76,7 @@ export function Shell({ children }: ShellProps) {
             </Link>
           </Button>
         </nav>
-      </header>
+      </header> */}
 
       <main className="flex-1">{children}</main>
     </div>
