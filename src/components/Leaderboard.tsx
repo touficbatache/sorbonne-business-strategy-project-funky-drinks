@@ -130,7 +130,7 @@ export function Leaderboard({ players }: LeaderboardProps) {
                     )}
                   >
                     {player.profitCum > 0 ? "+" : ""}
-                    {player.profitCum.toLocaleString()}
+                    {player.profitCum.toLocaleString()} k€
                   </td>
                   <td className="p-4 text-right">
                     {(player.marketShareLast * 100).toFixed(1)}%

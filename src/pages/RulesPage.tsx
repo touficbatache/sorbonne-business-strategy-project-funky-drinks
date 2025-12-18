@@ -75,7 +75,8 @@ export default function RulesPage() {
               </div>
               <div className="bg-card border border-border rounded-xl p-6 text-center">
                 <div className="font-display text-4xl text-accent">
-                  {STARTING_CASH.toLocaleString()}
+                  {/* {STARTING_CASH.toLocaleString()} */}
+                  192 K€
                 </div>
                 <div className="text-muted-foreground">Cash initial</div>
               </div>
@@ -100,9 +101,7 @@ export default function RulesPage() {
                   key={key}
                   className="bg-card border border-border rounded-xl p-4 flex items-center gap-4"
                 >
-                  <div className="w-14 h-14 rounded-lg bg-secondary flex items-center justify-center text-3xl">
-                    {info.icon}
-                  </div>
+                  <img src={info.image} alt={info.name} className="w-16 h-16" />
                   <div>
                     <div className="font-display text-xl">{info.name}</div>
                     <div className="text-sm text-muted-foreground">
