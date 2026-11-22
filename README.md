@@ -19,6 +19,8 @@ The simulation (demand, competition, capacity, costs, cash) is in `src/lib/simul
 
 ## Run it locally
 
+Requires Node.js 22.22 or later.
+
 ```sh
 npm install
 npm run dev

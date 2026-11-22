@@ -1,6 +1,6 @@
 import { Player } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Trophy, TrendingUp, PieChart, Smile } from "lucide-react";
+import { Trophy, TrendingUp, ChartPie, FaceSlightlySmiling } from "lucide-react";
 import { useState } from "react";
 
 interface LeaderboardProps {
@@ -65,13 +65,13 @@ export function Leaderboard({ players }: LeaderboardProps) {
         <SortButton
           active={sortKey === "marketShare"}
           onClick={() => setSortKey("marketShare")}
-          icon={<PieChart className="w-4 h-4" />}
+          icon={<ChartPie className="w-4 h-4" />}
           label="Part marché"
         />
         <SortButton
           active={sortKey === "satisfaction"}
           onClick={() => setSortKey("satisfaction")}
-          icon={<Smile className="w-4 h-4" />}
+          icon={<FaceSlightlySmiling className="w-4 h-4" />}
           label="Satisfaction"
         />
       </div>

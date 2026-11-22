@@ -37,7 +37,7 @@ export function MarketBriefModal() {
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">
+          <DialogTitle className="font-display text-2xl leading-8">
             Market Brief
           </DialogTitle>
         </DialogHeader>

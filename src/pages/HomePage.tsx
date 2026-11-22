@@ -1,7 +1,7 @@
 import { Shell } from "@/components/Shell";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/gameStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Zap, Play, BookOpen, RotateCcw } from "lucide-react";
 
 export default function HomePage() {

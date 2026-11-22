@@ -5,8 +5,8 @@ import {
   TrendingDown,
   DollarSign,
   Package,
-  Smile,
-  PieChart,
+  FaceSlightlySmiling,
+  ChartPie,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,12 +67,12 @@ export function RoundRecap({
             highlight
           />
           <StatCard
-            icon={<PieChart className="w-5 h-5" />}
+            icon={<ChartPie className="w-5 h-5" />}
             label="Part de marché"
             value={`${(result.marketShare * 100).toFixed(1)}%`}
           />
           <StatCard
-            icon={<Smile className="w-5 h-5" />}
+            icon={<FaceSlightlySmiling className="w-5 h-5" />}
             label="Satisfaction"
             value={`${result.satisfaction}/100`}
             color={result.satisfaction >= 60 ? "energy" : "warning"}

@@ -1,6 +1,6 @@
 import { Shell } from "@/components/Shell";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import {
   BASE_MARKET_DEMAND,
   LEVER_INFO,

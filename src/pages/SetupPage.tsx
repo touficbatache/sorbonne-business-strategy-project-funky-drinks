@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Shell } from "@/components/Shell";
 import { Stepper } from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGameStore } from "@/store/gameStore";
-import { Plus, Trash2, ArrowRight } from "lucide-react";
+import { Plus, Trash, ArrowRight } from "lucide-react";
 
 const STEPS = [
   { id: "setup", label: "Joueurs" },
@@ -92,7 +92,7 @@ export default function SetupPage() {
                     size="sm"
                     onClick={() => removePlayer(index)}
                   >
-                    <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                    <Trash className="w-4 h-4 text-muted-foreground hover:text-destructive" />
                   </Button>
                 </div>
               ))}

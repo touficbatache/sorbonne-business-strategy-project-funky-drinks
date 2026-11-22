@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Shell } from "@/components/Shell";
 import { Stepper } from "@/components/Stepper";
 import { ScoreboardMini } from "@/components/ScoreboardMini";
@@ -67,7 +67,7 @@ export default function GamePage() {
         <div className="mt-8 flex gap-8">
           {/* Sidebar - hidden during gate, minimal during decision */}
           {phase !== "PLAYER_GATE" && phase !== "FINAL" && (
-            <aside className="hidden lg:block w-64 space-y-4 flex-shrink-0">
+            <aside className="hidden lg:block w-64 space-y-4 shrink-0">
               <div className="bg-card/50 border border-border rounded-xl p-4">
                 {/* chosen product */}
                 <h4 className="text-sm font-medium text-muted-foreground mb-3">

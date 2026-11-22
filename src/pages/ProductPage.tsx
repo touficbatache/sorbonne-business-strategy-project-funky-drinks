@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Shell } from "@/components/Shell";
 import { Stepper } from "@/components/Stepper";
 import { Button } from "@/components/ui/button";
