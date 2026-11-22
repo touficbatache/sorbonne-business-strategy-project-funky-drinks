@@ -1,6 +1,8 @@
 # Funky Drinks
 
-A turn-based business strategy game: each player runs a sports-nutrition drinks company over 5 rounds and tries to finish with the strongest business. Built for a business strategy project at Sorbonne. The game itself is in French.
+A turn-based business strategy game: each player runs a sports-nutrition drinks company over 5 rounds and tries to finish with the strongest business. The game itself is in French.
+
+It was my part of a team business strategy project at Sorbonne: I designed and built this web app.
 
 **Play it:** https://funky-drinks.vercel.app
 
